@@ -1,0 +1,15 @@
+--- #YAML:1.0
+name:                POE-Component-IRC-Plugin-MegaHAL
+version:             0.01
+abstract:            A PoCo-IRC plugin which wraps an
+license:             perl
+author:              
+    - Hinrik Örn Sigurðsson <hinrik.sig@gmail.com>
+generated_by:        ExtUtils::MakeMaker version 6.42
+distribution_type:   module
+requires:     
+    POE::Component::AI::MegaHAL:   0
+    POE::Component::IRC:           0
+meta-spec:
+    url:     http://module-build.sourceforge.net/META-spec-v1.3.html
+    version: 1.3

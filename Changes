@@ -1,3 +1,7 @@
+0.03  Tue Aug  5 06:18:42 GMT 2008
+    - Removed some duplicate code
+    - Added some error checking to transplant method
+
 0.02  Tue Aug  5 02:13:14 GMT 2008
     - Minor pod updates
     - Actually part own channel on plugin removal

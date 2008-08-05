@@ -2,13 +2,14 @@ package POE::Component::IRC::Plugin::MegaHAL;
 
 use strict;
 use warnings;
+use Carp;
 use POE;
 use POE::Component::AI::MegaHAL;
 use POE::Component::IRC::Common qw(l_irc matches_mask_array);
-use POE::Component::IRC::Plugin qw(:ALL);
+use POE::Component::IRC::Plugin qw(PCI_EAT_NONE);
 use POE::Component::IRC::Plugin::BotAddressed;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 sub new {
     my ($package, %args) = @_;
@@ -137,6 +138,8 @@ sub brain {
 
 sub transplant {
     my ($self, $brain) = @_;
+    
+    croak 'Argument must be a POE::Component::AI::MegaHAL instance' if ref $brain ne 'POE::Component::AI::MegaHAL';
     my $old_brain = $self->{MegaHAL};
     $poe_kernel->post($self->{MegaHAL}->session_id(), 'shutdown') unless $self->{keep_alive};
     $self->{MegaHAL} = $brain;
@@ -150,33 +153,13 @@ sub S_001 {
     return PCI_EAT_NONE;
 }
 
-sub S_bot_addressed {
+sub S_public {
     my ($self, $irc) = splice @_, 0, 2;
     my $user         = ${ $_[0] };
     my $chan         = ${ $_[1] }->[0];
     my $what         = ${ $_[2] };
 
-    $poe_kernel->post($self->{session_id} => _other_handler => $user, $chan, $what);
-    return PCI_EAT_NONE;
-}
-
-sub S_bot_mentioned {
-    my ($self, $irc) = splice @_, 0, 2;
-    my $user         = ${ $_[0] };
-    my $chan         = ${ $_[1] }->[0];
-    my $what         = ${ $_[2] };
-    
-    $poe_kernel->post($self->{session_id} => _other_handler => $user, $chan, $what);
-    return PCI_EAT_NONE;
-}
-
-sub S_bot_mentioned_action {
-    my ($self, $irc) = splice @_, 0, 2;
-    my $user         = ${ $_[0] };
-    my $chan         = ${ $_[1] }->[0];
-    my $what         = ${ $_[2] };
-    
-    $poe_kernel->post($self->{session_id} => _other_handler => $user, $chan, $what);
+    $poe_kernel->post($self->{session_id} => _own_handler => $user, $chan, $what);
     return PCI_EAT_NONE;
 }
 
@@ -191,15 +174,10 @@ sub S_ctcp_action {
     return PCI_EAT_NONE;
 }
 
-sub S_public {
-    my ($self, $irc) = splice @_, 0, 2;
-    my $user         = ${ $_[0] };
-    my $chan         = ${ $_[1] }->[0];
-    my $what         = ${ $_[2] };
-
-    $poe_kernel->post($self->{session_id} => _own_handler => $user, $chan, $what);
-    return PCI_EAT_NONE;
-}
+no warnings 'once';
+*S_bot_addressed        = \&S_ctcp_action;
+*S_bot_mentioned        = \&S_ctcp_action;
+*S_bot_mentioned_action = \&S_ctcp_action;
 
 1;
 __END__
@@ -251,7 +229,7 @@ present.
 
 Takes the following optional arguments:
 
-'MegaHAL', reference to an existing
+'MegaHAL', a reference to an existing
 L<POE::Component::AI::MegaHAL|POE::Component::AI::MegaHAL> object you have
 lying around. Useful if you want to use it with multiple IRC components.
 If this argument is not provided, the plugin will construct its own object.

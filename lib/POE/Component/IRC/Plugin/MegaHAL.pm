@@ -9,7 +9,7 @@ use POE::Component::IRC::Common qw(l_irc matches_mask_array strip_color strip_fo
 use POE::Component::IRC::Plugin qw(PCI_EAT_NONE);
 use POE::Component::IRC::Plugin::BotAddressed;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 sub new {
     my ($package, %args) = @_;
@@ -101,17 +101,13 @@ sub _own_handler {
     my ($self, $kernel, $user, $chan, $what) = @_[OBJECT, KERNEL, ARG0..$#_];
     
     return if $self->_ignoring($user);
-
-    my $event = '_blank';
-    if ($self->{Own_channel} && l_irc($self->{Own_channel}) eq l_irc($chan)) {
-        $event = '_megahal_reply';
-    }
+    return if !$self->{Own_channel} || l_irc($self->{Own_channel}) ne l_irc($chan);
 
     $what = strip_color($what);
     $what = strip_formatting($what);
     
     $kernel->post($self->{MegaHAL}->session_id() => do_reply => {
-        event   => $event,
+        event   => '_megahal_reply',
         text    => $what,
         _target => $chan,
     });
@@ -204,7 +200,6 @@ sub S_join {
     my ($self, $irc) = splice @_, 0, 2;
     my $user         = ${ $_[0] };
     my $chan         = ${ $_[1] };
-
 
     return PCI_EAT_NONE if (split /!/, $user)[0] eq $irc->nick_name();
     $poe_kernel->post($self->{session_id} => _greet_handler => $user, $chan);

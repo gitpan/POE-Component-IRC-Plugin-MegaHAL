@@ -10,7 +10,7 @@ use POE::Component::AI::MegaHAL;
 use POE::Component::IRC::Common qw(l_irc matches_mask_array strip_color strip_formatting);
 use POE::Component::IRC::Plugin qw(PCI_EAT_NONE);
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 sub new {
     my ($package, %args) = @_;
@@ -26,8 +26,8 @@ sub new {
     }
 
     $self->{Method} = 'notice' if !defined $self->{Method} || $self->{Method} !~ /privmsg|notice/;
-    $self->{flooders} = { };
-    $self->{Flood_interval} = 60 if !defined $self->{Flood_interval};
+    $self->{abusers} = { };
+    $self->{Abuse_interval} = 60 if !defined $self->{Abuse_interval};
 
     return $self;
 }
@@ -85,19 +85,19 @@ sub _megahal_greeting {
     return;
 }
 
-sub _ignoring {
+sub _ignoring_user {
     my ($self, $user, $chan) = @_;
     
-    if ($self->{Ignore}) {
+    if ($self->{Ignore_masks}) {
         my $mapping = $self->{irc}->isupport('CASEMAPPING');
-        return 1 if keys %{ matches_mask_array($self->{Ignore}, [$user], $mapping) };
+        return 1 if keys %{ matches_mask_array($self->{Ignore_masks}, [$user], $mapping) };
     }
-    
-    # flood protection
+
+    # abuse protection
     my $key = "$user $chan";
-    my $last  = delete $self->{flooders}->{$key};
-    $self->{flooders}->{$key} = time;
-    return 1 if $last && (time - $last < $self->{Flood_interval});
+    my $last_time = delete $self->{abusers}->{$key};
+    $self->{abusers}->{$key} = time;
+    return 1 if $last_time && (time - $last_time < $self->{Abuse_interval});
     
     return;
 }
@@ -105,16 +105,23 @@ sub _ignoring {
 sub _msg_handler {
     my ($self, $kernel, $type, $user, $chan, $what) = @_[OBJECT, KERNEL, ARG0..$#_];
 
-    return if $self->_ignoring($user, $chan);
+    return if $self->_ignoring_user($user, $chan);
     $what = _normalize($what);
 
+    # should we reply?
     my $event = '_no_reply';
     my $nick = $self->{irc}->nick_name();
     if ($self->{Own_channel} && (l_irc($chan) eq l_irc($self->{Own_channel}))
         || $type eq 'public' && $what =~ s/^\s*\Q$nick\E[:,;.!?]?\s*(.*)$/$1/i
-        || $what =~ /$nick/i)
+        || $self->{Talkative} && $what =~ /$nick/i)
     {
         $event = '_megahal_reply';
+    }
+
+    if ($self->{Ignore_regexes}) {
+        for my $regex (@{ $self->{Ignore_regexes} }) {
+            return if $what =~ $regex;
+        }
     }
 
     $kernel->post($self->{MegaHAL}->session_id() => do_reply => {
@@ -123,12 +130,13 @@ sub _msg_handler {
         _target => $chan,
     });
 
+    return;
 }
 
 sub _greet_handler {
     my ($self, $kernel, $user, $chan) = @_[OBJECT, KERNEL, ARG0, ARG1];
 
-    return if $self->_ignoring($user, $chan);
+    return if $self->_ignoring_user($user, $chan);
     return if !$self->{Own_channel} || (l_irc($chan) ne l_irc($self->{Own_channel}));
 
     $kernel->post($self->{MegaHAL}->session_id() => initial_greeting => {
@@ -158,9 +166,12 @@ sub brain {
 sub transplant {
     my ($self, $brain) = @_;
     
-    croak 'Argument must be a POE::Component::AI::MegaHAL instance' if ref $brain ne 'POE::Component::AI::MegaHAL';
+    if (ref $brain ne 'POE::Component::AI::MegaHAL') {
+        croak 'Argument must be a POE::Component::AI::MegaHAL instance';
+    }
+
     my $old_brain = $self->{MegaHAL};
-    $poe_kernel->post($self->{MegaHAL}->session_id(), 'shutdown') unless $self->{keep_alive};
+    $poe_kernel->post($self->{MegaHAL}->session_id(), 'shutdown') if !$self->{keep_alive};
     $self->{MegaHAL} = $brain;
     $self->{keep_alive} = 1;
     return $old_brain;
@@ -228,13 +239,13 @@ access to a MegaHAL conversation simulator.
      server   => 'irc.freenode.net',
  );
  
- my @channels = ('#other_chan', '#my_chan');
+ my @channels = ('#public_chan', '#bot_chan');
  
- $irc->plugin_add('MegaHAL', POE::Component::IRC::Plugin::MegaHAL->new(Own_channel => '#my_chan'));
  $irc->plugin_add('AutoJoin', POE::Component::IRC::Plugin::AutoJoin->new(Channels => \@channels));
  $irc->plugin_add('Connector', POE::Component::IRC::Plugin::Connector->new());
+ $irc->plugin_add('MegaHAL', POE::Component::IRC::Plugin::MegaHAL->new(Own_channel => '#bot_chan'));
+ 
  $irc->yield('connect');
-
  $poe_kernel->run();
 
 =head1 DESCRIPTION
@@ -242,7 +253,11 @@ access to a MegaHAL conversation simulator.
 POE::Component::IRC::Plugin::MegaHAL is a L<POE::Component::IRC|POE::Component::IRC>
 plugin. It provides "intelligence" through the use of
 L<POE::Component::AI::MegaHAL|POE::Component::AI::MegaHal>.
-It will respond when people either mention your nickname or address you.
+It will talk back when addressed by channel members (and possibly in other
+situations, see L<C<new>|/"new">.
+
+All NOTICEs are ignored, so if your other bots only issue NOTICEs like
+they should, they will be ignored automatically.
 
 This plugin requires the IRC component to be L<POE::Component::IRC::State|POE::Component::IRC::State>
 or a subclass thereof. It also requires a L<POE::Component::IRC::Plugin::BotAddressed|POE::Component::IRC::Plugin::BotAddressed>
@@ -255,28 +270,37 @@ present.
 
 Takes the following optional arguments:
 
-'MegaHAL', a reference to an existing
+I<'MegaHAL'>, a reference to an existing
 L<POE::Component::AI::MegaHAL|POE::Component::AI::MegaHAL> object you have
 lying around. Useful if you want to use it with multiple IRC components.
 If this argument is not provided, the plugin will construct its own object.
 
-'MegaHAL_args', a hash reference containing arguments to pass to the constructor
-of a new L<POE::Component::AI::MegaHAL|POE::Component::AI::MegaHAL> object.
+I<'MegaHAL_args'>, a hash reference containing arguments to pass to the
+constructor of a new L<POE::Component::AI::MegaHAL|POE::Component::AI::MegaHAL>
+object.
 
-'Own_channel', a channel where it will reply to all messages, as well as greet
-everyone who joins. It will try to join this channel if the IRC component is
-not already on it. It will also part from it when the plugin is removed from
-the pipeline. Defaults to none.
+I<'Own_channel'>, a channel where it will reply to all messages, as well as
+greet everyone who joins. The plugin will take care of joining the channel.
+It will part from it when the plugin is removed from the pipeline. Defaults
+to none.
 
-'Flood_interval', default is 60 (seconds), which means that user X in
+I<'Abuse_interval'>, default is 60 (seconds), which means that user X in
 channel Y has to wait that long before addressing the bot in the same channel
 if he doesn't want to be ignored. Setting this to 0 effectively turns off
-flood protection.
+abuse protection.
 
-'Ignore', an array reference of IRC masks (e.g. "purl!*@*") to ignore.
+I<'Talkative'>, when set to true, the bot will respond whenever someone
+mentions its name (via PRIVMSG or ACTION). If false, it will only respond
+when addressed directly. Default is false.
 
-'Method', how you want messages to be delivered. Valid options are 'notice'
-(the default) and 'privmsg'.
+I<'Ignore_masks'>, an array reference of IRC masks (e.g. "purl!*@*") to
+ignore.
+
+I<'Ignore_regexes'>, an array reference of regex objects. If a message
+matches any of them, it will be ignored.
+
+I<'Method'>, how you want messages to be delivered. Valid options are
+'notice' (the default) and 'privmsg'.
 
 Returns a plugin object suitable for feeding to
 L<POE::Component::IRC|POE::Component::IRC>'s plugin_add() method.

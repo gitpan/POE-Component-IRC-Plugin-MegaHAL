@@ -1,3 +1,6 @@
+0.14  Sat Nov 29 19:16:34 GMT 2008
+    - Added program irchal_seed to create a MegaHAL brain from IRC logs
+
 0.13  Sat Nov 29 15:44:05 GMT 2008
     - It now sees ACTIONs as "$nick $action"
 

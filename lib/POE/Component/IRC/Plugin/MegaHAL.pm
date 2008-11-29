@@ -10,7 +10,7 @@ use POE::Component::AI::MegaHAL;
 use POE::Component::IRC::Common qw(l_irc matches_mask_array strip_color strip_formatting);
 use POE::Component::IRC::Plugin qw(PCI_EAT_NONE);
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 sub new {
     my ($package, %args) = @_;
@@ -186,11 +186,21 @@ sub S_001 {
 sub S_ctcp_action {
     my ($self, $irc) = splice @_, 0, 2;
     my $user         = ${ $_[0] };
+    my $nick         = (split /!/, $user)[0];
     my $chan         = ${ $_[1] }->[0];
     my $what         = ${ $_[2] };
 
     return PCI_EAT_NONE if $chan !~ /^[#&!]/;
-    $poe_kernel->post($self->{session_id} => _msg_handler => 'action', $user, $chan, $what);
+    
+    $poe_kernel->post(
+        $self->{session_id},
+        ' _msg_handler',
+        'action',
+        $user, 
+        $chan,
+        "$nick $what",
+    ); 
+    
     return PCI_EAT_NONE;
 }
 

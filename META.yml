@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                POE-Component-IRC-Plugin-MegaHAL
-version:             0.19
+version:             0.20
 abstract:            A PoCo-IRC plugin which provides
 license:             perl
 author:              

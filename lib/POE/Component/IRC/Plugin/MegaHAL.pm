@@ -3,14 +3,12 @@ package POE::Component::IRC::Plugin::MegaHAL;
 use strict;
 use warnings;
 use Carp;
-use Encode qw(decode);
-use Encode::Guess;
 use POE;
 use POE::Component::AI::MegaHAL;
-use POE::Component::IRC::Common qw(l_irc matches_mask_array strip_color strip_formatting);
+use POE::Component::IRC::Common qw(l_irc matches_mask_array irc_to_utf8 strip_color strip_formatting);
 use POE::Component::IRC::Plugin qw(PCI_EAT_NONE);
 
-our $VERSION = '0.20';
+our $VERSION = '0.21';
 
 sub new {
     my ($package, %args) = @_;
@@ -151,10 +149,9 @@ sub _greet_handler {
 sub _normalize {
     my ($line) = @_;
 
+    $line = irc_to_utf8($line);
     $line = strip_color($line);
     $line = strip_formatting($line);
-    my $utf8 = guess_encoding($line, 'utf8');
-    $line = ref $utf8 ? decode('utf8', $line) : decode('cp1252', $line);
     return $line;
 }
 
@@ -264,14 +261,25 @@ access to a MegaHAL conversation simulator.
 
 =head1 DESCRIPTION
 
-POE::Component::IRC::Plugin::MegaHAL is a L<POE::Component::IRC|POE::Component::IRC>
-plugin. It provides "intelligence" through the use of
-L<POE::Component::AI::MegaHAL|POE::Component::AI::MegaHal>.
+POE::Component::IRC::Plugin::MegaHAL is a
+L<POE::Component::IRC|POE::Component::IRC> plugin. It provides "intelligence"
+through the use of L<POE::Component::AI::MegaHAL|POE::Component::AI::MegaHal>.
 It will talk back when addressed by channel members (and possibly in other
-situations, see L<C<new>|/"new">.
+situations, see L<C<new>|/"new">). An example:
+
+ --> megahal_bot joins #channel
+ <Someone> oh hi
+ <Other> hello there
+ <Someone> megahal_bot: hi there
+ <megahal_bot> oh hi
 
 All NOTICEs are ignored, so if your other bots only issue NOTICEs like
 they should, they will be ignored automatically.
+
+Before using, you should read the documentation for
+L<POE::Component::AI::MegaHAL|POE::Component::AI::MegaHAL> and by extension,
+L<AI::MegaHAL|AI::MegaHAL>, so you have an idea of what to pass as the
+B<'MegaHAL_args'> parameter to L<C<new>|/"new">.
 
 This plugin requires the IRC component to be
 L<POE::Component::IRC::State|POE::Component::IRC::State> or a subclass thereof.
@@ -302,8 +310,8 @@ if he doesn't want to be ignored. Setting this to 0 effectively turns off
 abuse protection.
 
 B<'Talkative'>, when set to true, the bot will respond whenever someone
-mentions its name (via PRIVMSG or ACTION). If false, it will only respond
-when addressed directly. Default is false.
+mentions its name (in a PRIVMSG or CTCP ACTION (/me)). If false, it will only
+respond when addressed directly in a PRIVMSG. Default is false.
 
 B<'Ignore_masks'>, an array reference of IRC masks (e.g. "purl!*@*") to
 ignore.

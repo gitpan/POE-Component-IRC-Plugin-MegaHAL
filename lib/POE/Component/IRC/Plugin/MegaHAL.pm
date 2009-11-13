@@ -8,7 +8,7 @@ use POE::Component::AI::MegaHAL;
 use POE::Component::IRC::Common qw(l_irc matches_mask_array irc_to_utf8 strip_color strip_formatting);
 use POE::Component::IRC::Plugin qw(PCI_EAT_NONE);
 
-our $VERSION = '0.24';
+our $VERSION = '0.25';
 
 sub new {
     my ($package, %args) = @_;
@@ -68,6 +68,10 @@ sub _start {
 
 sub _megahal_reply {
     my ($self, $info) = @_[OBJECT, ARG0];
+    if ($self->{English}) {
+        $info->{reply} =~ s{\bi\b}{I};
+        $info->{reply} =~ s{(?<=\w)$}{.};
+    }
     $self->{irc}->yield($self->{Method} => $info->{_target}, $info->{reply});
     return;
 }
@@ -307,16 +311,21 @@ abuse protection.
 
 B<'Talkative'>, when set to true, the bot will respond whenever someone
 mentions its name (in a PRIVMSG or CTCP ACTION (/me)). If false, it will only
-respond when addressed directly in a PRIVMSG. Default is false.
+respond when addressed directly with a PRIVMSG. Default is false.
 
 B<'Ignore_masks'>, an array reference of IRC masks (e.g. "purl!*@*") to
 ignore.
 
 B<'Ignore_regexes'>, an array reference of regex objects. If a message
-matches any of them, it will be ignored.
+matches any of them, it will be ignored. Handy for ignoring messages with
+URLs in them.
 
 B<'Method'>, how you want messages to be delivered. Valid options are
 'notice' (the default) and 'privmsg'.
+
+B<'English'>, whether to apply some English-language corrections to the bot's
+output. Currently it capitalizes the word 'I' and ends paragraphs with '.'
+where appropriate. Defaults to false.
 
 Returns a plugin object suitable for feeding to
 L<POE::Component::IRC|POE::Component::IRC>'s plugin_add() method.

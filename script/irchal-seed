@@ -6,7 +6,7 @@ use Getopt::Long qw(:config autohelp);
 use POE::Component::IRC::Common qw(l_irc strip_color strip_formatting);
 use Pod::Usage;
 
-my $VERSION = '0.30';
+my $VERSION = '0.31';
 
 GetOptions(
     'f|format=s'       => \(my $format = ''),
@@ -50,7 +50,7 @@ LINE: while (my $line = <STDIN>) {
     if (($nick, $msg) = $line =~ /$privmsg/) {
         # PRIVMSG 
         if (defined $bot) {
-            my ($first) = $msg =~ /^\s*([^0\s][^\s:,;.!?]*)[:,;.!?]?\s*/;
+            my ($first) = $msg =~ /^\s*([^\s:,;.!?]+?)[:,;.!?]?/;
             if (defined $first && l_irc($first) eq l_irc($bot)) {
                 $msg =~ s/\Q$first\E[:,;.!?]?\s*//;
             }
@@ -91,11 +91,13 @@ or irssi.
 B<irchal-seed> <options>
 
  Options:
-   -f FORMAT, --format=NAME     Log format (pocoirc or irssi)
-   -c CASE, --case=CASE         The IRC server's case mapping
-   -b NICK, --bot=NICK          The nickname of the IRC bot
-   -r RX --ignore-regex=RX      A regex for lines to ignore
-   -n NICK, --ignore-nick=NICK  A nickname to ignore
+   -f FORMAT, --format=NAME         Log format (pocoirc or irssi)
+   -c CASE,   --case=CASE           The IRC server's case mapping
+   -b NICK,   --bot=NICK            The nickname of the IRC bot
+   -r RX      --ignore-regex=RX     A regex for lines to ignore
+   -n NICK,   --ignore-nick=NICK    A nickname to ignore
+   -h,        --help                Print this help message
+   -v,        --version             Print version number
 
 Input is accepted on STDIN, and output is delivered to STDOUT.
 

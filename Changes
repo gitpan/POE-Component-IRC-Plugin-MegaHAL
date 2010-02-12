@@ -1,3 +1,7 @@
+0.33  Fri Feb 12 00:07:24 GMT 2010
+    - Print a warning if POE catches an exception in our code
+    - Wait for MegaHAL to save the brain before we quit
+
 0.32  Thu Feb 11 21:03:30 GMT 2010
     - When we're addressed, trim some whitespace after the nickname
     - Make MegaHAL.pm and irchal-seed use the same regex to identify lines

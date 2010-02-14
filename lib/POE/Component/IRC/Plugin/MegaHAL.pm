@@ -9,7 +9,7 @@ use POE::Component::AI::MegaHAL;
 use POE::Component::IRC::Common qw(l_irc matches_mask_array irc_to_utf8 strip_color strip_formatting);
 use POE::Component::IRC::Plugin qw(PCI_EAT_NONE);
 
-our $VERSION = '0.33';
+our $VERSION = '0.34';
 
 sub new {
     my ($package, %args) = @_;
@@ -125,36 +125,46 @@ sub _megahal_saved {
 }
 
 sub _ignoring_user {
-    my ($self, $user, $chan) = @_;
+    my ($self, $user) = @_;
     
     if ($self->{Ignore_masks}) {
         my $mapping = $self->{irc}->isupport('CASEMAPPING');
         return 1 if keys %{ matches_mask_array($self->{Ignore_masks}, [$user], $mapping) };
     }
 
+    return;
+}
+
+sub _ignoring_abuser {
+    my ($self, $user, $chan) = @_;
+
     # abuse protection
     my $key = "$user $chan";
     my $last_time = delete $self->{abusers}->{$key};
     $self->{abusers}->{$key} = time;
+
     return 1 if $last_time && (time - $last_time < $self->{Abuse_interval});
-    
     return;
 }
-
+    
 sub _msg_handler {
     my ($self, $kernel, $type, $user, $chan, $what) = @_[OBJECT, KERNEL, ARG0..$#_];
+    my $nick = $self->{irc}->nick_name();
 
-    return if $self->_ignoring_user($user, $chan);
+    return if $self->_ignoring_user($user);
     $what = _normalize_irc($what);
 
     # should we reply?
     my $event = '_no_reply';
-    my $nick = $self->{irc}->nick_name();
     if ($self->{Own_channel} && (l_irc($chan) eq l_irc($self->{Own_channel}))
         || $type eq 'public' && $what =~ s/^\s*\Q$nick\E[:,;.!?~]?\s//i
         || $self->{Talkative} && $what =~ /\Q$nick/i)
     {
         $event = '_megahal_reply';
+    }
+
+    if ($event eq '_megahal_reply' && $self->_ignoring_abuser($user, $chan)) {
+        $event = '_no_reply';
     }
 
     if ($self->{Ignore_regexes}) {
@@ -320,10 +330,10 @@ It will talk back when addressed by channel members (and possibly in other
 situations, see L<C<new>|/"new">). An example:
 
  --> megahal_bot joins #channel
- <Someone> oh hi
+ <Someone> oh hi there
  <Other> hello there
- <Someone> megahal_bot: hi there
- <megahal_bot> oh hi
+ <Someone> megahal_bot: hi
+ <megahal_bot> oh hi there
 
 All NOTICEs are ignored, so if your other bots only issue NOTICEs like
 they should, they will be ignored automatically.

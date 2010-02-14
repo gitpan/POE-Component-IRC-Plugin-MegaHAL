@@ -9,7 +9,7 @@ use POE::Component::AI::MegaHAL;
 use POE::Component::IRC::Common qw(l_irc matches_mask_array irc_to_utf8 strip_color strip_formatting);
 use POE::Component::IRC::Plugin qw(PCI_EAT_NONE);
 
-our $VERSION = '0.34';
+our $VERSION = '0.35';
 
 sub new {
     my ($package, %args) = @_;
@@ -368,8 +368,8 @@ to none.
 
 B<'Abuse_interval'>, default is 60 (seconds), which means that user X in
 channel Y has to wait that long before addressing the bot in the same channel
-if he doesn't want to be ignored. Setting this to 0 effectively turns off
-abuse protection.
+if he wants to get a reply. Setting this to 0 effectively turns off abuse
+protection.
 
 B<'Talkative'>, when set to a true value, the bot will respond whenever
 someone mentions its name (in a PRIVMSG or CTCP ACTION (/me)). If false, it

@@ -3,13 +3,13 @@ package POE::Component::IRC::Plugin::MegaHAL;
 use strict;
 use warnings;
 use Carp;
-use Encode qw(decode);
+use Encode qw(decode_utf8 encode_utf8 is_utf8);
 use POE;
 use POE::Component::AI::MegaHAL;
 use POE::Component::IRC::Common qw(l_irc matches_mask_array irc_to_utf8 strip_color strip_formatting);
 use POE::Component::IRC::Plugin qw(PCI_EAT_NONE);
 
-our $VERSION = '0.37';
+our $VERSION = '0.38';
 
 sub new {
     my ($package, %args) = @_;
@@ -99,6 +99,7 @@ sub _sig_DIE {
 sub _megahal_reply {
     my ($self, $info) = @_[OBJECT, ARG0];
     my $reply = $self->_normalize_megahal($info->{reply});
+    $reply = encode_utf8($reply);
     
     $self->{irc}->yield($self->{Method} => $info->{_target}, $reply);
     return;
@@ -108,6 +109,7 @@ sub _megahal_greeting {
     my ($self, $info) = @_[OBJECT, ARG0];
     my $reply = $self->_normalize_megahal($info->{reply});
     $reply = "$info->{_nick}: $reply";
+    $reply = encode_utf8($reply);
     
     $self->{irc}->yield($self->{Method} => $info->{_target}, $reply);
     return;
@@ -156,7 +158,7 @@ sub _msg_handler {
 
     # should we reply?
     my $event = '_no_reply';
-    if ($self->{Own_channel} && (l_irc($chan) eq l_irc($self->{Own_channel}))
+    if ($self->{Own_channel} && $self->_is_own_channel($chan)
         || $type eq 'public' && $what =~ s/^\s*\Q$nick\E[:,;.!?~]?\s//i
         || $self->{Talkative} && $what =~ /\Q$nick/i)
     {
@@ -182,11 +184,21 @@ sub _msg_handler {
     return;
 }
 
+sub _is_own_channel {
+    my $self = shift;
+    my $chan = l_irc(shift);
+    my $own  = l_irc($self->{Own_channel});
+
+    $chan = irc_to_utf8($chan) if is_utf8($own);
+    return 1 if $chan eq $own;
+    return;
+}
+
 sub _greet_handler {
     my ($self, $kernel, $user, $chan) = @_[OBJECT, KERNEL, ARG0, ARG1];
 
     return if $self->_ignoring_user($user, $chan);
-    return if !$self->{Own_channel} || (l_irc($chan) ne l_irc($self->{Own_channel}));
+    return if !$self->{Own_channel} || !$self->_is_own_channel($chan);
 
     $kernel->post($self->{MegaHAL}->session_id() => initial_greeting => {
         event   => '_megahal_greeting',
@@ -200,7 +212,7 @@ sub _greet_handler {
 sub _normalize_megahal {
     my ($self, $line) = @_;
 
-    $line = decode('utf8', $line);
+    $line = decode_utf8($line);
     if ($self->{English}) {
         $line =~ s{\bi\b}{I}g;
         $line =~ s{(?<=\w)$}{.};

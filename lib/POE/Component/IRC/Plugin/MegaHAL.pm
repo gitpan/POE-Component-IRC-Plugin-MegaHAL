@@ -1,15 +1,19 @@
 package POE::Component::IRC::Plugin::MegaHAL;
+BEGIN {
+  $POE::Component::IRC::Plugin::MegaHAL::AUTHORITY = 'cpan:HINRIK';
+}
+BEGIN {
+  $POE::Component::IRC::Plugin::MegaHAL::VERSION = '0.39';
+}
 
 use strict;
-use warnings;
+use warnings FATAL => 'all';
 use Carp;
 use Encode qw(decode_utf8 encode_utf8 is_utf8);
 use POE;
 use POE::Component::AI::MegaHAL;
 use POE::Component::IRC::Common qw(l_irc matches_mask_array irc_to_utf8 strip_color strip_formatting);
 use POE::Component::IRC::Plugin qw(PCI_EAT_NONE);
-
-our $VERSION = '0.38';
 
 sub new {
     my ($package, %args) = @_;
@@ -296,12 +300,10 @@ sub S_join {
 }
 
 1;
-__END__
 
 =head1 NAME
 
-POE::Component::IRC::Plugin::MegaHAL - A PoCo-IRC plugin which provides
-access to a MegaHAL conversation simulator.
+POE::Component::IRC::Plugin::MegaHAL - A PoCo-IRC plugin which provides access to a MegaHAL conversation simulator.
 
 =head1 SYNOPSIS
 

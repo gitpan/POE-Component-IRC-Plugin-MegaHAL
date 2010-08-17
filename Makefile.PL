@@ -1,24 +1,56 @@
+
 use strict;
 use warnings;
-use inc::Module::Install;
-use 5.006;
 
-if ($inc::Module::Install::VERSION lt '0.94') {
-    die 'Module::Install is too old';
+
+
+use ExtUtils::MakeMaker 6.31;
+
+
+
+my %WriteMakefileArgs = (
+  'ABSTRACT' => 'A PoCo-IRC plugin which provides access to a MegaHAL conversation simulator.',
+  'AUTHOR' => 'Hinrik Örn Sigurðsson <hinrik.sig@gmail.com>',
+  'BUILD_REQUIRES' => {
+    'Test::Script' => '1.07'
+  },
+  'CONFIGURE_REQUIRES' => {
+    'ExtUtils::MakeMaker' => '6.31'
+  },
+  'DISTNAME' => 'POE-Component-IRC-Plugin-MegaHAL',
+  'EXE_FILES' => [
+    'bin/irchal-seed'
+  ],
+  'LICENSE' => 'perl',
+  'NAME' => 'POE::Component::IRC::Plugin::MegaHAL',
+  'PREREQ_PM' => {
+    'POE::Component::Hailo' => '0',
+    'POE::Component::IRC' => '6.22'
+  },
+  'VERSION' => '0.39',
+  'test' => {
+    'TESTS' => 't/*.t'
+  }
+);
+
+
+unless ( eval { ExtUtils::MakeMaker->VERSION(6.56) } ) {
+  my $br = delete $WriteMakefileArgs{BUILD_REQUIRES};
+  my $pp = $WriteMakefileArgs{PREREQ_PM};
+  for my $mod ( keys %$br ) {
+    if ( exists $pp->{$mod} ) {
+      $pp->{$mod} = $br->{$mod} if $br->{$mod} > $pp->{$mod};
+    }
+    else {
+      $pp->{$mod} = $br->{$mod};
+    }
+  }
 }
 
-name           ('POE-Component-IRC-Plugin-MegaHAL');
-perl_version   ('5.006');
-author         ('Hinrik Örn Sigurðsson <hinrik.sig@gmail.com>');
-abstract_from  ('lib/POE/Component/IRC/Plugin/MegaHAL.pm');
-version_from   ('lib/POE/Component/IRC/Plugin/MegaHAL.pm');
-install_script ('script/irchal-seed');
-license        ('perl');
-githubmeta     ();
-clean_files    ('t/megahal.dic t/megahal.brn');
-requires       ('POE::Component::AI::MegaHAL' => '0');
-requires       ('POE::Component::IRC'         => '6.20');
-test_requires  ('Test::More'                  => '0');
-test_requires  ('Test::Script'                => '0');
-tests_recursive();
-WriteAll();
+delete $WriteMakefileArgs{CONFIGURE_REQUIRES}
+  unless eval { ExtUtils::MakeMaker->VERSION(6.52) };
+
+WriteMakefile(%WriteMakefileArgs);
+
+
+

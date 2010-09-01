@@ -33,7 +33,7 @@
       },
       "runtime" : {
          "requires" : {
-            "POE::Component::Hailo" : 0,
+            "POE::Component::AI::MegaHAL" : 0,
             "POE::Component::IRC" : "6.22"
          }
       }
@@ -54,7 +54,7 @@
          "web" : "http://github.com/hinrik/poe-component-irc-plugin-megahal"
       }
    },
-   "version" : "0.39",
+   "version" : "0.40",
    "x_authority" : "cpan:HINRIK"
 }
 

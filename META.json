@@ -54,7 +54,7 @@
          "web" : "http://github.com/hinrik/poe-component-irc-plugin-megahal"
       }
    },
-   "version" : "0.40",
+   "version" : "0.41",
    "x_authority" : "cpan:HINRIK"
 }
 

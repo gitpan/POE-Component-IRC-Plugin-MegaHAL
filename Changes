@@ -1,3 +1,6 @@
+0.42  Thu Sep 9 06:29:48 GMT 2010
+    - Mention App::Pocoirc in the SYNOPSIS
+
 0.41  Mon Sep 6 04:36:34 GMT 2010
     - Add a 'Channels' parameter
 

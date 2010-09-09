@@ -3,33 +3,20 @@ NAME
     access to a MegaHAL conversation simulator.
 
 SYNOPSIS
-     #!/usr/bin/env perl
- 
-     use strict;
-     use warnings;
-     use POE;
-     use POE::Component::IRC::Plugin::AutoJoin;
-     use POE::Component::IRC::Plugin::Connector;
+    To quickly get an IRC bot with this plugin up and running, you can use
+    App::Pocoirc:
+
+     $ pocoirc -s irc.perl.org -j '#bots' -p MegaHAL
+
+    Or use it in your code:
+
      use POE::Component::IRC::Plugin::MegaHAL;
-     use POE::Component::IRC::State;
  
-     my $irc = POE::Component::IRC::State->spawn(
-         nick   => 'Brainy',
-         server => 'irc.freenode.net',
-     );
- 
-     my @channels = ('#public_chan', '#bot_chan');
- 
-     $irc->plugin_add('AutoJoin', POE::Component::IRC::Plugin::AutoJoin->new(Channels => \@channels));
-     $irc->plugin_add('Connector', POE::Component::IRC::Plugin::Connector->new());
      $irc->plugin_add('MegaHAL', POE::Component::IRC::Plugin::MegaHAL->new(
          Own_channel    => '#bot_chan',
          English        => 1,
          Ignore_regexes => [ qr{^\s*\w+://\S+\s*$} ], # ignore URL-only lines
      ));
- 
-     $irc->yield('connect');
-     $poe_kernel->run();
 
 DESCRIPTION
     POE::Component::IRC::Plugin::MegaHAL is a POE::Component::IRC plugin. It
@@ -112,7 +99,7 @@ METHODS
     itself.
 
 AUTHOR
-    Hinrik Örn Sigurðsson, hinrik.sig@gmail.com
+    Hinrik Ã–rn SigurÃ°sson, hinrik.sig@gmail.com
 
 KUDOS
     Those go to Chris "BinGOs" Williams and his friend GumbyBRAIN.

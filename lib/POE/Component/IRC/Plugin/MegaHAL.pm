@@ -3,7 +3,7 @@ BEGIN {
   $POE::Component::IRC::Plugin::MegaHAL::AUTHORITY = 'cpan:HINRIK';
 }
 BEGIN {
-  $POE::Component::IRC::Plugin::MegaHAL::VERSION = '0.42';
+  $POE::Component::IRC::Plugin::MegaHAL::VERSION = '0.43';
 }
 
 use strict;
@@ -329,7 +329,7 @@ POE::Component::IRC::Plugin::MegaHAL - A PoCo-IRC plugin which provides access t
 To quickly get an IRC bot with this plugin up and running, you can use
 L<App::Pocoirc|App::Pocoirc>:
 
- $ pocoirc -s irc.perl.org -j '#bots' -p MegaHAL
+ $ pocoirc -s irc.perl.org -j '#bots' -a MegaHAL
 
 Or use it in your code:
 

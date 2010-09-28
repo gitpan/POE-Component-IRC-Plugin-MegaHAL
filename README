@@ -6,7 +6,7 @@ SYNOPSIS
     To quickly get an IRC bot with this plugin up and running, you can use
     App::Pocoirc:
 
-     $ pocoirc -s irc.perl.org -j '#bots' -p MegaHAL
+     $ pocoirc -s irc.perl.org -j '#bots' -a MegaHAL
 
     Or use it in your code:
 

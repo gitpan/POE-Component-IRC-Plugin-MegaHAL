@@ -24,10 +24,11 @@ my %WriteMakefileArgs = (
   'LICENSE' => 'perl',
   'NAME' => 'POE::Component::IRC::Plugin::MegaHAL',
   'PREREQ_PM' => {
+    'IRC::Utils' => '0.05',
     'POE::Component::AI::MegaHAL' => '0',
     'POE::Component::IRC' => '6.22'
   },
-  'VERSION' => '0.43',
+  'VERSION' => '0.44',
   'test' => {
     'TESTS' => 't/*.t'
   }

@@ -11,4 +11,6 @@ dist.ini
 lib/POE/Component/IRC/Plugin/MegaHAL.pm
 t/01_compile.t
 t/02_load.t
+t/megahal.brn
+t/megahal.dic
 t/megahal.trn

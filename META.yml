@@ -27,5 +27,5 @@ resources:
   homepage: http://search.cpan.org/dist/POE-Component-IRC-Plugin-MegaHAL/
   license: http://dev.perl.org/licenses/
   repository: git://github.com/hinrik/poe-component-irc-plugin-megahal.git
-version: 0.44
+version: 0.45
 x_authority: cpan:HINRIK

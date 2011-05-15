@@ -3,7 +3,7 @@ BEGIN {
   $POE::Component::IRC::Plugin::MegaHAL::AUTHORITY = 'cpan:HINRIK';
 }
 BEGIN {
-  $POE::Component::IRC::Plugin::MegaHAL::VERSION = '0.44';
+  $POE::Component::IRC::Plugin::MegaHAL::VERSION = '0.45';
 }
 
 use strict;

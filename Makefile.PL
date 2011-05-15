@@ -28,7 +28,7 @@ my %WriteMakefileArgs = (
     'POE::Component::AI::MegaHAL' => '0',
     'POE::Component::IRC' => '6.22'
   },
-  'VERSION' => '0.44',
+  'VERSION' => '0.45',
   'test' => {
     'TESTS' => 't/*.t'
   }

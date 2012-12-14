@@ -4,33 +4,33 @@ use warnings;
 
 
 
-use ExtUtils::MakeMaker 6.31;
+use ExtUtils::MakeMaker 6.30;
 
 
 
 my %WriteMakefileArgs = (
-  'ABSTRACT' => 'A PoCo-IRC plugin which provides access to a MegaHAL conversation simulator.',
-  'AUTHOR' => 'Hinrik Örn Sigurðsson <hinrik.sig@gmail.com>',
-  'BUILD_REQUIRES' => {
-    'Test::Script' => '1.07'
+  "ABSTRACT" => "A PoCo-IRC plugin which provides access to a MegaHAL conversation simulator.",
+  "AUTHOR" => "Hinrik \303\226rn Sigur\303\260sson <hinrik.sig\@gmail.com>",
+  "BUILD_REQUIRES" => {
+    "Test::Script" => "1.07"
   },
-  'CONFIGURE_REQUIRES' => {
-    'ExtUtils::MakeMaker' => '6.31'
+  "CONFIGURE_REQUIRES" => {
+    "ExtUtils::MakeMaker" => "6.30"
   },
-  'DISTNAME' => 'POE-Component-IRC-Plugin-MegaHAL',
-  'EXE_FILES' => [
-    'bin/irchal-seed'
+  "DISTNAME" => "POE-Component-IRC-Plugin-MegaHAL",
+  "EXE_FILES" => [
+    "bin/irchal-seed"
   ],
-  'LICENSE' => 'perl',
-  'NAME' => 'POE::Component::IRC::Plugin::MegaHAL',
-  'PREREQ_PM' => {
-    'IRC::Utils' => '0.05',
-    'POE::Component::AI::MegaHAL' => '0',
-    'POE::Component::IRC' => '6.22'
+  "LICENSE" => "perl",
+  "NAME" => "POE::Component::IRC::Plugin::MegaHAL",
+  "PREREQ_PM" => {
+    "IRC::Utils" => "0.05",
+    "POE::Component::AI::MegaHAL" => 0,
+    "POE::Component::IRC" => "6.22"
   },
-  'VERSION' => '0.45',
-  'test' => {
-    'TESTS' => 't/*.t'
+  "VERSION" => "0.46",
+  "test" => {
+    "TESTS" => "t/*.t"
   }
 );
 

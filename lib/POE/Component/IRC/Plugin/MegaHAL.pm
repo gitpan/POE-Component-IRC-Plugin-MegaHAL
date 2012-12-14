@@ -2,8 +2,8 @@ package POE::Component::IRC::Plugin::MegaHAL;
 BEGIN {
   $POE::Component::IRC::Plugin::MegaHAL::AUTHORITY = 'cpan:HINRIK';
 }
-BEGIN {
-  $POE::Component::IRC::Plugin::MegaHAL::VERSION = '0.45';
+{
+  $POE::Component::IRC::Plugin::MegaHAL::VERSION = '0.46';
 }
 
 use strict;
